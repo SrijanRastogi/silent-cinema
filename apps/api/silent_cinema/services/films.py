@@ -466,3 +466,134 @@ def mux_subtitles(session: Session, settings: Settings, film_id: uuid.UUID) -> P
             status_code=422,
         )
     return output
+
+
+def burn_subtitles(session: Session, settings: Settings, film_id: uuid.UUID) -> Path:
+    """Burn subtitles directly into frames using FFmpeg's subtitles filter. Produces an MP4."""
+    asset = get_asset(session, film_id)
+    srt_path = export_subtitles(session, settings, film_id, "srt")
+    exports_dir = settings.storage_root / "exports" / str(asset.id)
+    exports_dir.mkdir(parents=True, exist_ok=True)
+    stem = re.sub(r"[^A-Za-z0-9._-]+", "-", Path(asset.original_filename).stem).strip("-")
+    output = exports_dir / f"{stem or 'film'}-burned-subtitles.mp4"
+    escaped_srt = str(srt_path).replace("\\", "/").replace(":", "\\:")
+    result = run_tool(
+        [
+            settings.ffmpeg_bin,
+            "-hide_banner",
+            "-loglevel",
+            "error",
+            "-y",
+            "-i",
+            str(video_path(settings, asset)),
+            "-vf",
+            f"subtitles={escaped_srt}",
+            "-c:v",
+            "libx264",
+            "-preset",
+            "veryfast",
+            "-crf",
+            "23",
+            "-c:a",
+            "copy",
+            str(output),
+        ],
+        timeout_seconds=settings.process_timeout_seconds,
+    )
+    if result.returncode != 0:
+        raise AppError(
+            "burn_failed",
+            f"FFmpeg could not burn subtitles: {stderr_summary(result)}",
+            status_code=422,
+        )
+    return output
+
+
+def scan_film(
+    session: Session,
+    settings: Settings,
+    film_id: uuid.UUID,
+    ocr_language: str = "eng",
+) -> FilmDetail:
+    """Scan or re-scan an existing stored film for intertitles and OCR."""
+    asset = get_asset(session, film_id)
+    path = video_path(settings, asset)
+
+    track = _ensure_track(session, asset, ocr_language)
+    existing_entries = session.scalars(
+        select(SubtitleEntry).where(SubtitleEntry.track_id == track.id)
+    ).all()
+    for entry in existing_entries:
+        session.delete(entry)
+
+    existing_intertitles = session.scalars(
+        select(Intertitle).where(Intertitle.media_asset_id == asset.id)
+    ).all()
+    for intertitle in existing_intertitles:
+        session.delete(intertitle)
+    session.flush()
+
+    job = ProcessingJob(
+        media_asset_id=asset.id,
+        state=JobState.OCR_PROCESSING,
+        stage="detect_and_ocr",
+        progress=25,
+        started_at=_now(),
+        config={"ocr_language": ocr_language},
+    )
+    session.add(job)
+    session.flush()
+
+    try:
+        result = detect_intertitles(
+            path,
+            options=DetectionOptions(ocr_language=ocr_language),
+            ffmpeg_bin=settings.ffmpeg_bin,
+            ffprobe_bin=settings.ffprobe_bin,
+            timeout_seconds=settings.process_timeout_seconds,
+        )
+    except (MediaProcessError, OcrError, ValueError) as error:
+        message = getattr(error, "message", str(error))
+        raise AppError(
+            "processing_failed", f"Detection failed: {message}", status_code=422
+        ) from error
+
+    sequence = 0
+    for candidate in result.candidates:
+        intertitle = Intertitle(
+            media_asset_id=asset.id,
+            job_id=job.id,
+            start_us=candidate.start_us,
+            end_us=candidate.end_us,
+            text=candidate.text,
+            ocr_confidence=candidate.ocr_confidence,
+            detector="native",
+            detection_metadata={
+                "detection_score": candidate.detection_score,
+                "frame_timestamp_us": candidate.frame_timestamp_us,
+            },
+        )
+        session.add(intertitle)
+        session.flush()
+        if not candidate.text:
+            continue
+        session.add(
+            SubtitleEntry(
+                track_id=track.id,
+                sequence=sequence,
+                start_us=candidate.start_us,
+                end_us=candidate.end_us,
+                text=candidate.text,
+                source="ocr",
+                source_intertitle_id=intertitle.id,
+            )
+        )
+        sequence += 1
+
+    job.state = JobState.COMPLETED
+    job.stage = None
+    job.progress = 100
+    job.completed_at = _now()
+    session.flush()
+    return get_film_detail(session, asset.id)
+

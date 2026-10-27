@@ -80,6 +80,26 @@ export interface paths {
         patch: operations["update_entry_api_v1_films__film_id__entries__entry_id__patch"];
         trace?: never;
     };
+    "/api/v1/films/{film_id}/scan": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Scan Film
+         * @description Scan or re-scan an existing stored film for intertitles and OCR.
+         */
+        post: operations["scan_film_api_v1_films__film_id__scan_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/films/{film_id}/subtitles/{subtitle_format}": {
         parameters: {
             query?: never;
@@ -106,6 +126,26 @@ export interface paths {
         };
         /** Stream Video */
         get: operations["stream_video_api_v1_films__film_id__video_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/films/{film_id}/video-burned-subtitles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Download Burned Video
+         * @description Return an MP4 copy with subtitles permanently burned onto the video frames.
+         */
+        get: operations["download_burned_video_api_v1_films__film_id__video_burned_subtitles_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -349,6 +389,17 @@ export interface components {
             status: "ready" | "not_ready";
         };
         /**
+         * ScanRequest
+         * @description Trigger or re-trigger intertitle scanning and OCR.
+         */
+        ScanRequest: {
+            /**
+             * Ocr Language
+             * @default eng
+             */
+            ocr_language: string;
+        };
+        /**
          * SubtitleEntryRead
          * @description One editable subtitle entry.
          */
@@ -578,6 +629,41 @@ export interface operations {
             };
         };
     };
+    scan_film_api_v1_films__film_id__scan_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                film_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["ScanRequest"] | null;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FilmDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     download_subtitles_api_v1_films__film_id__subtitles__subtitle_format__get: {
         parameters: {
             query?: never;
@@ -611,6 +697,37 @@ export interface operations {
         };
     };
     stream_video_api_v1_films__film_id__video_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                film_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    download_burned_video_api_v1_films__film_id__video_burned_subtitles_get: {
         parameters: {
             query?: never;
             header?: never;

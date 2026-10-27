@@ -10,13 +10,13 @@ describe("Dashboard", () => {
     renderRoute("/");
 
     expect(screen.getByRole("heading", { level: 1, name: "Workspace" })).toBeInTheDocument();
-    expect(screen.getByText("No films in this workspace")).toBeInTheDocument();
+    expect(await screen.findByText("No films in this workspace")).toBeInTheDocument();
     expect(screen.queryByText(/^\d+ films$/)).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /upload/i })).not.toBeInTheDocument();
 
     expect(await screen.findByText("API online")).toBeInTheDocument();
     expect(await screen.findByText("Ready")).toBeInTheDocument();
-    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock).toHaveBeenCalledTimes(3);
   });
 
   it("shows an actionable message when the API is unreachable", async () => {

@@ -15,6 +15,7 @@ from silent_cinema.api.v1.schemas import (
     EntryUpdate,
     FilmDetail,
     FilmSummary,
+    ScanRequest,
     SubtitleEntryRead,
 )
 from silent_cinema.db.session import Database
@@ -116,7 +117,9 @@ def download_subtitles(
 
 
 @router.get("/{film_id}/video-with-subtitles")
-def download_muxed_video(film_id: UUID, session: SessionDep, settings: SettingsDep) -> FileResponse:
+def download_muxed_video(
+    film_id: UUID, session: SessionDep, settings: SettingsDep
+) -> FileResponse:
     """Return a Matroska copy with a soft subtitle track (never burned in)."""
     path = films.mux_subtitles(session, settings, film_id)
     return FileResponse(
@@ -125,6 +128,32 @@ def download_muxed_video(film_id: UUID, session: SessionDep, settings: SettingsD
         filename=path.name,
         content_disposition_type="attachment",
     )
+
+
+@router.get("/{film_id}/video-burned-subtitles")
+def download_burned_video(
+    film_id: UUID, session: SessionDep, settings: SettingsDep
+) -> FileResponse:
+    """Return an MP4 copy with subtitles permanently burned onto the video frames."""
+    path = films.burn_subtitles(session, settings, film_id)
+    return FileResponse(
+        path,
+        media_type="video/mp4",
+        filename=path.name,
+        content_disposition_type="attachment",
+    )
+
+
+@router.post("/{film_id}/scan", response_model=FilmDetail)
+def scan_film(
+    film_id: UUID,
+    session: SessionDep,
+    settings: SettingsDep,
+    payload: ScanRequest | None = None,
+) -> FilmDetail:
+    """Scan or re-scan an existing stored film for intertitles and OCR."""
+    ocr_language = payload.ocr_language if payload else "eng"
+    return films.scan_film(session, settings, film_id, ocr_language=ocr_language)
 
 
 __all__ = ["router"]

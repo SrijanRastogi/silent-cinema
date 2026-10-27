@@ -2,7 +2,13 @@ import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Check, Crosshair, Loader2, Trash2 } from "lucide-react";
 
-import { ApiError, updateEntry, type FilmDetail, type SubtitleEntry } from "@/api/client";
+import {
+  ApiError,
+  deleteEntry,
+  updateEntry,
+  type FilmDetail,
+  type SubtitleEntry,
+} from "@/api/client";
 import { Button } from "@/components/ui/button";
 import { formatTimecode, parseTimecode } from "@/lib/timecode";
 
@@ -48,10 +54,7 @@ export function EntryEditor({ filmId, entry, onSeek }: EntryEditorProps) {
   });
 
   const remove = useMutation({
-    mutationFn: async () => {
-      const { deleteEntry } = await import("@/api/client");
-      return deleteEntry(filmId, entry.id);
-    },
+    mutationFn: () => deleteEntry(filmId, entry.id),
     onSuccess: () => {
       queryClient.setQueryData<FilmDetail>(["films", filmId], (current) =>
         current

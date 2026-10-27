@@ -406,6 +406,19 @@
         "title": "ReadinessResponse",
         "type": "object"
       },
+      "ScanRequest": {
+        "description": "Trigger or re-trigger intertitle scanning and OCR.",
+        "properties": {
+          "ocr_language": {
+            "default": "eng",
+            "maxLength": 32,
+            "title": "Ocr Language",
+            "type": "string"
+          }
+        },
+        "title": "ScanRequest",
+        "type": "object"
+      },
       "SubtitleEntryRead": {
         "description": "One editable subtitle entry.",
         "properties": {
@@ -768,6 +781,67 @@
         ]
       }
     },
+    "/api/v1/films/{film_id}/scan": {
+      "post": {
+        "description": "Scan or re-scan an existing stored film for intertitles and OCR.",
+        "operationId": "scan_film_api_v1_films__film_id__scan_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "film_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Film Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/ScanRequest"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Payload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FilmDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Scan Film",
+        "tags": [
+          "films"
+        ]
+      }
+    },
     "/api/v1/films/{film_id}/subtitles/{subtitle_format}": {
       "get": {
         "operationId": "download_subtitles_api_v1_films__film_id__subtitles__subtitle_format__get",
@@ -858,6 +932,48 @@
           }
         },
         "summary": "Stream Video",
+        "tags": [
+          "films"
+        ]
+      }
+    },
+    "/api/v1/films/{film_id}/video-burned-subtitles": {
+      "get": {
+        "description": "Return an MP4 copy with subtitles permanently burned onto the video frames.",
+        "operationId": "download_burned_video_api_v1_films__film_id__video_burned_subtitles_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "film_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Film Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Download Burned Video",
         "tags": [
           "films"
         ]

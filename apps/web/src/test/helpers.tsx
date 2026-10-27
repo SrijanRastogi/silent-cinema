@@ -14,10 +14,12 @@ export function jsonResponse(body: unknown, status = 200): Response {
 type ApiHandlers = {
   health?: () => Response | Promise<Response>;
   readiness?: () => Response | Promise<Response>;
+  films?: () => Response | Promise<Response>;
 };
 
 const defaultHealth = () => jsonResponse({ status: "ok", version: "0.1.0" });
 const defaultReadiness = () => jsonResponse({ status: "ready", database: "ok" });
+const defaultFilms = () => jsonResponse([]);
 
 export function stubApi(handlers: ApiHandlers = {}) {
   const fetchMock = vi.fn((input: RequestInfo | URL) => {
@@ -29,6 +31,9 @@ export function stubApi(handlers: ApiHandlers = {}) {
     }
     if (url.endsWith("/api/v1/health/ready")) {
       return Promise.resolve((handlers.readiness ?? defaultReadiness)());
+    }
+    if (url.endsWith("/api/v1/films")) {
+      return Promise.resolve((handlers.films ?? defaultFilms)());
     }
     return Promise.resolve(
       jsonResponse(

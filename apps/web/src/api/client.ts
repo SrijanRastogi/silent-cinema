@@ -66,12 +66,15 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
 
   let response: Response;
   try {
-    response = await fetch(`${API_BASE_URL}${path}`, {
+    const init: RequestInit = {
       method: options.method ?? "GET",
       headers,
-      body: options.body,
       signal: AbortSignal.timeout(options.timeoutMs ?? REQUEST_TIMEOUT_MS),
-    });
+    };
+    if (options.body !== undefined) {
+      init.body = options.body;
+    }
+    response = await fetch(`${API_BASE_URL}${path}`, init);
   } catch (error) {
     const timedOut = error instanceof DOMException && error.name === "TimeoutError";
     throw new ApiError({
@@ -166,3 +169,16 @@ export function subtitleDownloadUrl(filmId: string, format: "srt" | "vtt"): stri
 export function muxedVideoDownloadUrl(filmId: string): string {
   return `${API_BASE_URL}/api/v1/films/${filmId}/video-with-subtitles`;
 }
+
+export function burnedVideoDownloadUrl(filmId: string): string {
+  return `${API_BASE_URL}/api/v1/films/${filmId}/video-burned-subtitles`;
+}
+
+export function scanFilm(filmId: string, ocrLanguage: string = "eng"): Promise<FilmDetail> {
+  return request<FilmDetail>(`/api/v1/films/${filmId}/scan`, {
+    method: "POST",
+    body: JSON.stringify({ ocr_language: ocrLanguage }),
+    timeoutMs: UPLOAD_TIMEOUT_MS,
+  });
+}
+

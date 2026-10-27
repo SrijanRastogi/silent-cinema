@@ -60,3 +60,10 @@ class EntryCreate(BaseModel):
     text: str = Field(min_length=1, max_length=2000)
     start_us: int = Field(ge=0)
     end_us: int = Field(gt=0)
+
+
+class ScanRequest(BaseModel):
+    """Trigger or re-trigger intertitle scanning and OCR."""
+
+    ocr_language: str = Field(default="eng", max_length=32)
+
