@@ -1,0 +1,59 @@
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.venv/
+venv/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+dist/
+build/
+*.egg-info/
+.uv/
+
+# Node / frontend
+node_modules/
+apps/web/dist/
+apps/web/coverage/
+*.tsbuildinfo
+.vite/
+
+# Playwright
+test-results/
+playwright-report/
+blob-report/
+.playwright/
+
+# Local application data: never commit user media or generated artifacts
+data/
+models/
+*.mp4
+*.mkv
+*.mov
+*.avi
+*.mpg
+*.mpeg
+*.webm
+*.srt
+*.vtt
+
+# Editor / OS
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# Logs
+*.log
+logs/

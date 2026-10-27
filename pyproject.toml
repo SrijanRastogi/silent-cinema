@@ -1,0 +1,67 @@
+[project]
+name = "silent-cinema"
+version = "0.1.0"
+description = "Extract, review, and export intertitles from silent films."
+requires-python = ">=3.13,<3.14"
+dependencies = [
+    "alembic==1.20.1",
+    "fastapi==0.162.0",
+    "numpy==2.5.4",
+    "opencv-python-headless==5.0.0.93",
+    "pillow==13.0.0",
+    "psycopg[binary]==3.3.6",
+    "pydantic==2.14.1",
+    "pydantic-settings==2.16.1",
+    "pytesseract==0.3.13",
+    "python-multipart==0.0.22",
+    "sqlalchemy==2.1.6",
+    "uvicorn[standard]==0.54.0",
+]
+
+[dependency-groups]
+dev = [
+    "httpx2==2.16.0",
+    "mypy==2.4.0",
+    "pytest==9.1.1",
+    "ruff==0.17.3",
+]
+
+[tool.uv]
+package = false
+
+[tool.ruff]
+target-version = "py313"
+line-length = 100
+extend-exclude = ["apps/web", "data", ".venv"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
+ignore = ["B008"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["S101"]
+"apps/api/migrations/versions/*.py" = ["E501"]
+
+[tool.mypy]
+python_version = "3.13"
+mypy_path = "apps/api"
+files = ["apps/api/silent_cinema", "scripts"]
+strict = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+show_error_codes = true
+pretty = true
+exclude = ["apps/api/migrations"]
+
+[[tool.mypy.overrides]]
+module = ["cv2", "cv2.*", "pytesseract", "pytesseract.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["apps/api", "."]
+addopts = "-ra --strict-markers --strict-config"
+markers = [
+    "integration: requires a running PostgreSQL 18 database",
+    "media: requires FFmpeg and Tesseract",
+]

@@ -1,0 +1,212 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --surface: #f6f1e8;
+  --panel: #fffdf8;
+  --ink: #171411;
+  --line: #ddd4c6;
+  --muted: #6b6257;
+  --amber: #9a5b12;
+  --verified: #2f6b5f;
+  --danger: #9e3b24;
+  --warning: #8a6414;
+
+  --background: var(--surface);
+  --foreground: var(--ink);
+  --card: var(--panel);
+  --card-foreground: var(--ink);
+  --popover: var(--panel);
+  --popover-foreground: var(--ink);
+  --primary: var(--amber);
+  --primary-foreground: #fffdf8;
+  --secondary: #ede5d8;
+  --secondary-foreground: var(--ink);
+  --muted-surface: #efe7db;
+  --muted-foreground: var(--muted);
+  --accent: #ede5d8;
+  --accent-foreground: var(--ink);
+  --destructive: var(--danger);
+  --destructive-foreground: #fffdf8;
+  --border: var(--line);
+  --input: var(--line);
+  --ring: var(--amber);
+  --radius: 0.5rem;
+
+  color-scheme: light;
+}
+
+.dark {
+  --surface: #14120f;
+  --panel: #1d1a16;
+  --ink: #ede6da;
+  --line: #332e27;
+  --muted: #9a9083;
+  --amber: #d99a4e;
+  --verified: #6fa79b;
+  --danger: #d8795f;
+  --warning: #d9b45e;
+
+  --background: var(--surface);
+  --foreground: var(--ink);
+  --card: var(--panel);
+  --card-foreground: var(--ink);
+  --popover: var(--panel);
+  --popover-foreground: var(--ink);
+  --primary: var(--amber);
+  --primary-foreground: #171411;
+  --secondary: #2a251f;
+  --secondary-foreground: var(--ink);
+  --muted-surface: #24201b;
+  --muted-foreground: var(--muted);
+  --accent: #2a251f;
+  --accent-foreground: var(--ink);
+  --destructive: var(--danger);
+  --destructive-foreground: #171411;
+  --border: var(--line);
+  --input: var(--line);
+  --ring: var(--amber);
+
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-surface: var(--surface);
+  --color-panel: var(--panel);
+  --color-ink: var(--ink);
+  --color-line: var(--line);
+  --color-muted: var(--muted-surface);
+  --color-amber: var(--amber);
+  --color-verified: var(--verified);
+  --color-danger: var(--danger);
+  --color-warning: var(--warning);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Newsreader", ui-serif, Georgia, serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, monospace;
+
+  --radius-sm: calc(var(--radius) - 2px);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 4px);
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    min-height: 100dvh;
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-serif);
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background-color: color-mix(in srgb, var(--amber) 28%, transparent);
+    color: var(--ink);
+  }
+
+  button,
+  a {
+    touch-action: manipulation;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+
+    .animate-spin {
+      animation: none;
+    }
+  }
+}
+
+@layer components {
+  .film-gate {
+    position: relative;
+    border: 1px solid var(--border);
+    background-color: var(--card);
+    box-shadow: 0 1px 0 color-mix(in srgb, var(--ink) 4%, transparent);
+  }
+
+  .film-gate::before,
+  .film-gate::after {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 1.25rem;
+    content: "";
+    background-image: radial-gradient(circle at center, var(--line) 0.22rem, transparent 0.24rem);
+    background-size: 100% 1.5rem;
+    background-repeat: repeat-y;
+    opacity: 0.9;
+    pointer-events: none;
+  }
+
+  .film-gate::before {
+    left: 0;
+  }
+
+  .film-gate::after {
+    right: 0;
+  }
+
+  .timecode {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+  }
+}

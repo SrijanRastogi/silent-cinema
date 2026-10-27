@@ -1,0 +1,54 @@
+services:
+  db:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_USER: silent
+      POSTGRES_PASSWORD: silent_dev
+      POSTGRES_DB: silent_cinema
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U silent -d silent_cinema"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+  api:
+    build:
+      context: .
+      dockerfile: docker/api.Dockerfile
+    environment:
+      APP_ENV: development
+      APP_HOST: 0.0.0.0
+      APP_PORT: "8000"
+      DATABASE_URL: postgresql+psycopg://silent:silent_dev@db:5432/silent_cinema
+      STORAGE_ROOT: /data
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - mediadata:/data
+    depends_on:
+      db:
+        condition: service_healthy
+
+  worker:
+    profiles: ["worker"]
+    build:
+      context: .
+      dockerfile: docker/api.Dockerfile
+    command: ["python", "-m", "silent_cinema_worker"]
+    environment:
+      APP_ENV: development
+      DATABASE_URL: postgresql+psycopg://silent:silent_dev@db:5432/silent_cinema
+      STORAGE_ROOT: /data
+    volumes:
+      - mediadata:/data
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+  mediadata:

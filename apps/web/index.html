@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Extract, review, and export intertitles from silent films as SRT or WebVTT subtitles."
+    />
+    <meta name="theme-color" content="#14120f" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f6f1e8" media="(prefers-color-scheme: light)" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>Silent Cinema in Your Language</title>
+    <script>
+      (() => {
+        try {
+          const stored = localStorage.getItem("silent-cinema-theme");
+          const dark =
+            stored === "dark" ||
+            (stored === null && window.matchMedia("(prefers-color-scheme: dark)").matches);
+          document.documentElement.classList.toggle("dark", dark);
+        } catch {
+          /* Storage can be unavailable; the CSS default still applies. */
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <noscript>
+      This application needs JavaScript to run. The API and exported subtitle files remain available
+      without the browser interface.
+    </noscript>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
